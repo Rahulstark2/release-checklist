@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: releasecheck
+      POSTGRES_PASSWORD: releasecheck
+      POSTGRES_DB: releasecheck
+    ports:
+      - "5432:5432"
+    volumes:
+      - releasecheck_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U releasecheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://releasecheck:releasecheck@db:5432/releasecheck
+      DATABASE_SSL: "false"
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    command: sh -c "node src/migrate.js && node src/server.js"
+
+volumes:
+  releasecheck_pgdata:
