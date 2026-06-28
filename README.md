@@ -22,24 +22,20 @@ releasecheck/
 
 ### 1. Database
 
-Easiest option — Docker:
-
-```bash
-cd backend
-docker compose up -d db
-```
-
-This starts a local Postgres on `localhost:5432` (user/password/db: `releasecheck`).
-
-If you'd rather use an existing Postgres install, just create a database and
-grab its connection string.
+First, create a PostgreSQL database online (for example, using [Neon](https://neon.tech)) and grab its connection string.
 
 ### 2. Backend
 
+Create a `.env` file in the `backend/` directory with the following structure:
+```env
+DATABASE_URL=postgresql://user:password@ep-example-db-pooler.region.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+PORT=4000
+DATABASE_SSL=true
+```
+
+Then run:
 ```bash
 cd backend
-cp .env.example .env
-# edit .env if needed (DATABASE_URL, DATABASE_SSL=false for local Docker Postgres)
 npm install
 npm run migrate   # creates the releases table
 npm run dev       # starts the API on http://localhost:4000
@@ -47,10 +43,14 @@ npm run dev       # starts the API on http://localhost:4000
 
 ### 3. Frontend
 
+Create a `.env` file in the `frontend/` directory with the following structure:
+```env
+VITE_API_URL=http://localhost:4000/api/v1
+```
+
+Then run:
 ```bash
 cd frontend
-cp .env.example .env
-# VITE_API_URL should point at the backend, e.g. http://localhost:4000/api/v1
 npm install
 npm run dev       # starts the SPA on http://localhost:5173
 ```
